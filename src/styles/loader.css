@@ -1,0 +1,18 @@
+.ph-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.ph-loader-full {
+  min-height: 240px;
+}
+
+.ph-loader-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--ph-bg);
+}

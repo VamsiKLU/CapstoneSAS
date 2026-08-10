@@ -1,0 +1,86 @@
+.ph-auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  background: #0b1120;
+}
+
+.ph-auth-art {
+  padding: 56px;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(25, 118, 210, 0.25), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(14, 165, 233, 0.18), transparent 35%),
+    #0b1120;
+}
+
+.ph-auth-form-wrap {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: var(--ph-bg);
+}
+
+.ph-auth-form-wrap-full {
+  grid-column: 1 / -1;
+}
+
+.ph-auth-register {
+  grid-template-columns: 1fr;
+}
+
+.ph-auth-card {
+  width: min(440px, 100%);
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--ph-shadow-lg);
+}
+
+.ph-pipeline-viz {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 48px;
+}
+
+.ph-viz-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ph-viz-link {
+  width: 24px;
+  height: 2px;
+  background: rgba(96, 165, 250, 0.5);
+}
+
+.ph-logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(25, 118, 210, 0.15);
+  color: #60a5fa;
+}
+
+@media (max-width: 900px) {
+  .ph-auth {
+    grid-template-columns: 1fr;
+  }
+
+  .ph-auth-art {
+    display: none;
+  }
+}

@@ -1,0 +1,20 @@
+.ph-error-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  background: var(--ph-bg);
+}
+
+.ph-build-logs {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  font-family: "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  max-height: 320px;
+  overflow: auto;
+}
