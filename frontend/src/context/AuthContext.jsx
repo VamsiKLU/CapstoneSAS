@@ -41,7 +41,17 @@ export function AuthProvider({ children }) {
     authService
       .getProfile()
       .then((profile) => setUser(profile))
-      .catch(() => clearSession())
+      .catch((err) => {
+        // Only clear the session when the backend explicitly rejects the token
+        // (i.e. a real HTTP error like 401/403). When the backend is simply
+        // unreachable (network down / not started) we keep the locally-stored
+        // user so that the mock-only flow keeps working across page navigations.
+        const isRealAuthError =
+          err?.status === 401 || err?.status === 403;
+        if (isRealAuthError) clearSession();
+        // else: leave user/token intact — getProfile already fell back to
+        // localStorage in authService; if it still threw, just swallow it.
+      })
       .finally(() => setLoading(false));
   }, [clearSession]);
 

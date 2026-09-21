@@ -39,8 +39,29 @@ api.interceptors.response.use(
   },
 );
 
+// Returns true when the backend is simply unreachable (no server running).
+// Covers all codes Axios / browsers emit for connection-refused / network-down:
+//   ERR_NETWORK         — browser fetch / XHR when host is unreachable
+//   ECONNREFUSED        — Node.js / Vite dev-server proxy
+//   ERR_CONNECTION_REFUSED — Chrome when connecting to localhost with no server
+//   ETIMEDOUT / ECONNABORTED — request timeout (backend starting up or hung)
+const OFFLINE_CODES = new Set([
+  "ERR_NETWORK",
+  "ECONNREFUSED",
+  "ERR_CONNECTION_REFUSED",
+  "ETIMEDOUT",
+  "ECONNABORTED",
+  "ERR_EMPTY_RESPONSE",
+]);
+
 export function isNetworkError(error) {
-  return !error.response && (error.code === "ERR_NETWORK" || error.message === "Network Error");
+  if (error?.response) return false; // got an HTTP response → not a network error
+  return (
+    OFFLINE_CODES.has(error?.code) ||
+    error?.message === "Network Error" ||
+    OFFLINE_CODES.has(error?.original?.code) ||
+    error?.original?.message === "Network Error"
+  );
 }
 
 export default api;
