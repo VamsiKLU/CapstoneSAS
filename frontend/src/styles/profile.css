@@ -1,0 +1,40 @@
+.ph-profile-card {
+  max-width: 640px;
+  background: var(--ph-surface);
+  border-radius: var(--ph-radius);
+  border: 1px solid var(--ph-border);
+  padding: 24px;
+}
+
+.ph-profile-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ph-border);
+}
+
+.ph-profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #21262d;
+  border: 2px solid #30363d;
+  font-size: 24px;
+  font-weight: 600;
+  color: #f0f6fc;
+  display: grid;
+  place-items: center;
+}
+
+.ph-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ph-border-muted);
+}
+
+.ph-profile-row:last-child {
+  border-bottom: none;
+}

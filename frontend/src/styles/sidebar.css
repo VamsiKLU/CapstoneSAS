@@ -1,0 +1,145 @@
+.ph-sidebar {
+  background: #161b22;
+  color: #c9d1d9;
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+  border-right: 1px solid #30363d;
+}
+
+.ph-sidebar.collapsed {
+  width: 64px;
+}
+
+.ph-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  min-height: 52px;
+  border-bottom: 1px solid #21262d;
+}
+
+.ph-logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: #1f6feb;
+  color: #ffffff;
+  flex-shrink: 0;
+  border: 1px solid rgba(240, 246, 252, 0.15);
+}
+
+.ph-logo-text {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-size: 14px;
+  color: #f0f6fc;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+}
+
+.ph-logo-text span.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ph-logo-text span.brand-title span.accent {
+  color: #58a6ff;
+}
+
+.ph-logo-sub {
+  font-size: 10px;
+  font-family: var(--ph-font-mono);
+  color: #8b949e;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ph-nav {
+  padding: 12px 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ph-nav-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6e7681;
+  font-weight: 600;
+  padding: 12px 10px 4px;
+}
+
+.ph-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  white-space: nowrap;
+  margin-bottom: 2px;
+  border-left: 3px solid transparent;
+}
+
+.ph-nav-item:hover {
+  background: rgba(177, 186, 196, 0.08);
+  color: #f0f6fc;
+}
+
+.ph-nav-item.active {
+  background: rgba(56, 139, 253, 0.1);
+  color: #58a6ff;
+  font-weight: 600;
+  border-left-color: #1f6feb;
+}
+
+.ph-nav-item svg {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: #8b949e;
+}
+
+.ph-nav-item:hover svg,
+.ph-nav-item.active svg {
+  color: inherit;
+}
+
+.ph-sidebar-footer {
+  padding: 10px 8px;
+  border-top: 1px solid #21262d;
+}
+
+.ph-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 4, 9, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 25;
+}
+
+@media (max-width: 900px) {
+  .ph-sidebar {
+    position: fixed;
+    left: 0;
+    transform: translateX(-100%);
+  }
+  .ph-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+}
