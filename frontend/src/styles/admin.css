@@ -1,0 +1,145 @@
+/* Admin shell layout */
+.ph-admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #0d1117;
+}
+
+.ph-admin-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #161b22;
+  border-right: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.ph-admin-sidebar-brand {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #21262d;
+}
+
+.ph-admin-sidebar-brand-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 2px;
+}
+
+.ph-admin-sidebar-brand-sub {
+  font-size: 11px;
+  font-family: var(--ph-font-mono);
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ph-admin-nav {
+  padding: 16px 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ph-admin-nav-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6e7681;
+  font-weight: 600;
+  padding: 12px 8px 6px;
+}
+
+.ph-admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+  margin-bottom: 2px;
+  border-left: 3px solid transparent;
+}
+
+.ph-admin-nav-item:hover {
+  background: rgba(177, 186, 196, 0.08);
+  color: #f0f6fc;
+  text-decoration: none;
+}
+
+.ph-admin-nav-item.active {
+  background: rgba(188, 140, 255, 0.1);
+  color: #bc8cff;
+  font-weight: 600;
+  border-left-color: #8957e5;
+}
+
+.ph-admin-nav-item svg {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: #8b949e;
+}
+
+.ph-admin-nav-item:hover svg,
+.ph-admin-nav-item.active svg {
+  color: inherit;
+}
+
+.ph-admin-footer {
+  padding: 12px;
+  border-top: 1px solid #21262d;
+}
+
+.ph-admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ph-admin-topbar {
+  height: 52px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.ph-admin-content {
+  padding: 32px 40px 60px;
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+}
+
+.ph-admin-role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--ph-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(188, 140, 255, 0.12);
+  color: #bc8cff;
+  border: 1px solid rgba(188, 140, 255, 0.3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .ph-admin-content {
+    padding: 20px 16px;
+  }
+}

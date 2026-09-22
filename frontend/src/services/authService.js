@@ -1,57 +1,42 @@
-import api, { isNetworkError } from "./api";
+import axios from "axios";
 
-const DEMO_USERS = [
-  { id: 1, name: "Aarav Sharma", email: "admin@pipelinehub.io", role: "Admin", department: "Platform Engineering" },
-  { id: 2, name: "Jordan Lee", email: "dev@pipelinehub.io", role: "Developer", department: "Product Engineering" },
-];
+// Auth requests go directly to /auth/* (proxied to backend :3001 in dev).
+// withCredentials ensures the session cookie is sent/received.
+const authAxios = axios.create({
+  baseURL: "/",
+  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
+});
 
-function demoSession(email, role = "Developer") {
-  const user = DEMO_USERS.find((u) => u.email === email) || {
-    id: 99,
-    name: email.split("@")[0],
-    email,
-    role,
-    department: "Engineering",
-  };
-  return { token: `demo-jwt-${user.id}`, user };
+/**
+ * Fetch the currently authenticated user from the backend session.
+ * Returns the user object or throws if not authenticated.
+ */
+export async function getCurrentUser() {
+  const { data } = await authAxios.get("/auth/me");
+  return data.user;
 }
 
-export async function login({ email, password }) {
-  try {
-    const { data } = await api.post("/auth/login", { email, password });
-    return { token: data.token, user: data.user };
-  } catch (error) {
-    if (isNetworkError(error.original || error)) {
-      if (!email || !password) throw { message: "Email and password are required." };
-      const role = email.includes("admin") ? "Admin" : "Developer";
-      return demoSession(email, role);
-    }
-    throw error;
-  }
+/**
+ * Submit admin credentials to the backend.
+ * Returns the authenticated admin user object.
+ */
+export async function adminLogin({ email, password }) {
+  const { data } = await authAxios.post("/auth/admin/login", { email, password });
+  return data.user;
 }
 
-export async function register({ name, email, password, role = "Developer" }) {
-  try {
-    const { data } = await api.post("/auth/register", { name, email, password, role });
-    return { token: data.token, user: data.user };
-  } catch (error) {
-    if (isNetworkError(error.original || error)) {
-      if (!name || !email || !password) throw { message: "All fields are required." };
-      return demoSession(email, role);
-    }
-    throw error;
-  }
+/**
+ * Initiate GitHub OAuth flow.
+ * Redirects the browser to the backend which then redirects to GitHub.
+ */
+export function initiateGithubLogin() {
+  window.location.href = "/auth/github";
 }
 
-export async function getProfile() {
-  try {
-    const { data } = await api.get("/auth/profile");
-    return data;
-  } catch (error) {
-    if (isNetworkError(error.original || error)) {
-      const stored = localStorage.getItem("ph_user");
-      if (stored) return JSON.parse(stored);
-    }
-    throw error;
-  }
+/**
+ * Sign out the current user by destroying the server-side session.
+ */
+export async function logout() {
+  await authAxios.post("/auth/logout");
 }

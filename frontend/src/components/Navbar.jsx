@@ -160,8 +160,12 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
           aria-label="Account menu"
           sx={{ p: 0.5, border: "1px solid #30363d" }}
         >
-          <Avatar sx={{ width: 26, height: 26, bgcolor: "#21262d", color: "#f0f6fc", fontSize: 11, fontWeight: 700 }}>
-            {initials}
+          <Avatar
+            src={user?.avatar_url || undefined}
+            alt={user?.name || "User"}
+            sx={{ width: 26, height: 26, bgcolor: "#21262d", color: "#f0f6fc", fontSize: 11, fontWeight: 700 }}
+          >
+            {!user?.avatar_url ? initials : null}
           </Avatar>
         </IconButton>
 
@@ -176,7 +180,7 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
               {user?.name || "Developer"}
             </Typography>
             <Typography variant="caption" sx={{ color: "#8b949e", display: "block" }} noWrap>
-              {user?.email || "dev@pipelinehub.io"}
+              {user?.github_username ? `@${user.github_username}` : (user?.email || "Developer")}
             </Typography>
             <Box
               component="span"
@@ -193,7 +197,7 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
                 border: "1px solid rgba(56, 139, 253, 0.3)",
               }}
             >
-              {user?.role || "Developer"}
+              {user?.role || "DEVELOPER"}
             </Box>
           </Box>
           <Divider sx={{ my: 0.5 }} />
@@ -206,7 +210,7 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
             Settings
           </MenuItem>
           <Divider sx={{ my: 0.5 }} />
-          <MenuItem onClick={() => { setAnchor(null); logout(); navigate("/login"); }} sx={{ color: "#f85149" }}>
+          <MenuItem onClick={async () => { setAnchor(null); await logout(); navigate("/"); }} sx={{ color: "#f85149" }}>
             <LogoutOutlinedIcon sx={{ fontSize: 16, mr: 1.2, color: "#f85149" }} />
             Sign out
           </MenuItem>

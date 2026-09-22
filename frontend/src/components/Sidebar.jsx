@@ -51,9 +51,9 @@ export default function Sidebar({ collapsed, mobileOpen, onCloseMobile }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
   };
 
   return (

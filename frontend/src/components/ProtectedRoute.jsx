@@ -6,13 +6,16 @@ export default function ProtectedRoute({ children, roles }) {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
 
-  if (loading) return <Loader fullScreen message="Authenticating…" />;
+  if (loading) return <Loader fullScreen message="Verifying session..." />;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/" replace state={{ from: location.pathname }} />;
   }
 
-  if (roles?.length && !roles.includes(user?.role)) {
+  if (roles && roles.length > 0 && !roles.includes(user?.role)) {
+    // Admin trying to access developer routes -> send to admin panel
+    if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
+    // Developer trying to access admin routes -> send to dashboard
     return <Navigate to="/dashboard" replace />;
   }
 
