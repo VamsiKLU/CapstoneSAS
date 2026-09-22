@@ -1,0 +1,218 @@
+:root {
+  --ph-bg: #0d1117;
+  --ph-surface: #161b22;
+  --ph-surface-raised: #21262d;
+  --ph-surface-overlay: #1c2128;
+  --ph-border: #30363d;
+  --ph-border-muted: #21262d;
+  --ph-border-subtle: rgba(240, 246, 252, 0.1);
+  --ph-text: #f0f6fc;
+  --ph-text-secondary: #8b949e;
+  --ph-text-muted: #6e7681;
+  --ph-primary: #1f6feb;
+  --ph-primary-hover: #388bfd;
+  --ph-link: #58a6ff;
+  --ph-success: #238636;
+  --ph-success-hover: #2ea043;
+  --ph-success-text: #3fb950;
+  --ph-success-bg: rgba(46, 160, 67, 0.15);
+  --ph-error: #da3633;
+  --ph-error-text: #f85149;
+  --ph-error-bg: rgba(248, 81, 73, 0.12);
+  --ph-warning: #d29922;
+  --ph-warning-text: #e3b341;
+  --ph-warning-bg: rgba(210, 153, 34, 0.12);
+  --ph-purple: #bc8cff;
+  --ph-purple-bg: rgba(188, 140, 255, 0.12);
+  --ph-radius: 6px;
+  --ph-radius-sm: 4px;
+  --ph-radius-pill: 24px;
+  --ph-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --ph-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --ph-transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ph-bg);
+  color: var(--ph-text);
+  font-family: var(--ph-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--ph-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code, pre, .font-mono {
+  font-family: var(--ph-font-mono) !important;
+}
+
+.ph-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--ph-bg);
+}
+
+.ph-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ph-content {
+  padding: 32px 40px 60px;
+  flex: 1;
+  max-width: 1440px;
+  width: 100%;
+}
+
+.ph-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ph-border);
+}
+
+.ph-page-head-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ph-surface {
+  background: var(--ph-surface);
+  border: 1px solid var(--ph-border);
+  border-radius: var(--ph-radius);
+  padding: 16px;
+}
+
+.ph-surface-header {
+  padding: 12px 16px;
+  background: var(--ph-surface-raised);
+  border-bottom: 1px solid var(--ph-border);
+  border-top-left-radius: var(--ph-radius);
+  border-top-right-radius: var(--ph-radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ph-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--ph-text-secondary);
+}
+
+.ph-scroll-x {
+  overflow-x: auto;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* GitHub-inspired status tag styles */
+.gh-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ph-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.gh-badge.success {
+  background: var(--ph-success-bg);
+  border-color: rgba(63, 185, 80, 0.4);
+  color: var(--ph-success-text);
+}
+
+.gh-badge.error {
+  background: var(--ph-error-bg);
+  border-color: rgba(248, 81, 73, 0.4);
+  color: var(--ph-error-text);
+}
+
+.gh-badge.warning {
+  background: var(--ph-warning-bg);
+  border-color: rgba(210, 153, 34, 0.4);
+  color: var(--ph-warning-text);
+}
+
+.gh-badge.info {
+  background: rgba(56, 139, 253, 0.12);
+  border-color: rgba(56, 139, 253, 0.4);
+  color: #79c0ff;
+}
+
+.gh-badge.neutral {
+  background: var(--ph-surface-raised);
+  border-color: var(--ph-border);
+  color: var(--ph-text-secondary);
+}
+
+.gh-badge.purple {
+  background: var(--ph-purple-bg);
+  border-color: rgba(188, 140, 255, 0.4);
+  color: var(--ph-purple);
+}
+
+.gh-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .ph-content {
+    padding: 20px 16px 40px;
+  }
+}
