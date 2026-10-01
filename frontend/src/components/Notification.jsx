@@ -30,7 +30,7 @@ export function NotificationProvider({ children }) {
         open={toast.open}
         autoHideDuration={4500}
         onClose={close}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert onClose={close} severity={toast.severity} variant="filled" sx={{ width: "100%" }}>
           {toast.message}

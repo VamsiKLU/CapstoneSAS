@@ -2,7 +2,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import { initiateGithubLogin } from "../services/authService";
+import { initiateGitHubConnect } from "../services/authService";
 
 export default function AuthError() {
   const [searchParams] = useSearchParams();
@@ -51,7 +51,7 @@ export default function AuthError() {
             variant="contained"
             fullWidth
             startIcon={<GitHubIcon />}
-            onClick={initiateGithubLogin}
+            onClick={initiateGitHubConnect}
             sx={{
               backgroundColor: "#238636",
               "&:hover": { backgroundColor: "#2ea043" },

@@ -62,7 +62,6 @@ export default function CreateProject() {
             <Typography variant="h5" sx={{ fontWeight: 600, color: "#f0f6fc" }}>
               Connect Repository
             </Typography>
-            <span className="gh-badge purple">CLOUD-240</span>
           </div>
           <Typography variant="body2" sx={{ color: "#8b949e", mt: 0.3 }}>
             Register a repository, bind an independently versioned reusable CI pipeline, and begin builds.
