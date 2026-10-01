@@ -16,8 +16,8 @@ import { useNotification } from "../components/Notification";
 export default function ConnectGitHub() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, logout, refreshUser } = useAuth();
-  const { error: notifyError, success } = useNotification();
+  const { user, logout } = useAuth();
+  const { error: notifyError } = useNotification();
   const [connecting, setConnecting] = useState(false);
 
   // Handle error params from GitHub callback redirect

@@ -13,7 +13,7 @@ import Loader from "./Loader";
  *   - ADMIN accessing admin routes -> children
  */
 export default function ProtectedRoute({ children, roles }) {
-  const { isAuthenticated, loading, user, isGithubConnected, needsGitHub } = useAuth();
+  const { isAuthenticated, loading, user, needsGitHub } = useAuth();
   const location = useLocation();
 
   if (loading) return <Loader fullScreen message="Verifying session..." />;
