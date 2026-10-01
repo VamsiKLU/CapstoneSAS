@@ -19,8 +19,6 @@ import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
-import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
@@ -48,14 +46,6 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
             {collapsed ? <MenuIcon fontSize="small" /> : <MenuOpenIcon fontSize="small" />}
           </IconButton>
         </Tooltip>
-
-        {/* Workspace / Context Selector */}
-        <div className="ph-workspace-badge">
-          <BusinessOutlinedIcon sx={{ fontSize: 14, color: "#8b949e" }} />
-          <span className="org">acme-corp</span>
-          <span style={{ color: "#484f58" }}>/</span>
-          <span style={{ fontWeight: 600, color: "#f0f6fc" }}>cloud-240-ci</span>
-        </div>
 
         {/* Breadcrumb path */}
         <Box sx={{ ml: 1, minWidth: 0, display: { xs: "none", sm: "block" } }}>

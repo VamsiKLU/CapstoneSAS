@@ -70,7 +70,6 @@ export default function Sidebar({ collapsed, mobileOpen, onCloseMobile }) {
               <span className="brand-title">
                 Pipeline<span className="accent">Hub</span>
               </span>
-              <span className="ph-logo-sub">CLOUD-240 · CI Step Reuse</span>
             </div>
           )}
         </div>

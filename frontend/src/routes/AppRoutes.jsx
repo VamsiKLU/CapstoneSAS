@@ -3,10 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import ProtectedRoute from "../components/ProtectedRoute";
 
-// Public pages
+// Public / auth pages
 import Landing from "../pages/Landing";
-import AdminLogin from "../pages/AdminLogin";
-import AuthCallback from "../pages/AuthCallback";
+import Register from "../pages/Register";
+import ConnectGitHub from "../pages/ConnectGitHub";
 import AuthError from "../pages/AuthError";
 import NotFound from "../pages/NotFound";
 
@@ -29,22 +29,26 @@ import AdminSystem from "../pages/admin/AdminSystem";
 import AdminAudit from "../pages/admin/AdminAudit";
 import AdminSettings from "../pages/admin/AdminSettings";
 
-// Root component: shows Landing for unauthenticated, redirects authenticated users by role
+/**
+ * Root route: redirects authenticated users to role-appropriate destination.
+ * Unauthenticated users see Landing (with unified login).
+ */
 function RootRoute() {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, needsGitHub } = useAuth();
   if (loading) return <Loader fullScreen message="Checking session..." />;
   if (!isAuthenticated) return <Landing />;
   if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
+  if (needsGitHub) return <Navigate to="/connect-github" replace />;
   return <Navigate to="/dashboard" replace />;
 }
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
+      {/* Public / auth */}
       <Route path="/" element={<RootRoute />} />
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/connect-github" element={<ConnectGitHub />} />
       <Route path="/auth/error" element={<AuthError />} />
 
       {/* Developer routes -- DEVELOPER role only */}

@@ -46,6 +46,11 @@ import {
   stats,
 } from "../data/mockData";
 import * as buildService from "../services/buildService";
+import { useAuth } from "../context/AuthContext";
+import { useGitHubGuard } from "../hooks/useGitHubGuard";
+import { useNavigate } from "react-router-dom";
+import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
+import GitHubIcon from "@mui/icons-material/GitHub";
 import "../styles/dashboard.css";
 
 const NOTIF_ICONS = {
@@ -58,6 +63,9 @@ const NOTIF_ICONS = {
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [recentBuilds, setRecentBuilds] = useState(builds);
+  const { isGithubConnected } = useAuth();
+  const guard = useGitHubGuard();
+  const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
@@ -76,7 +84,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <AppShell title="Dashboard" subtitle="Continuous Integration Step Reuse & Dependency Overview">
+    <AppShell title="Dashboard">
       {/* Page Header */}
       <div className="ph-page-head">
         <Box>
@@ -84,10 +92,9 @@ export default function Dashboard() {
             <Typography variant="h5" sx={{ fontWeight: 600, color: "#f0f6fc" }}>
               Dashboard
             </Typography>
-            <span className="gh-badge purple">CLOUD-240</span>
           </div>
           <Typography variant="body2" sx={{ color: "#8b949e", mt: 0.3 }}>
-            Overview of pipeline execution, reusable components and dependency health.
+            Overview of pipeline execution, component health, and deployment activity.
           </Typography>
         </Box>
         <Stack direction="row" spacing={1}>
@@ -102,8 +109,7 @@ export default function Dashboard() {
           <Button
             variant="contained"
             size="small"
-            component={Link}
-            to="/pipelines"
+            onClick={(e) => { if (!guard()) { e.preventDefault(); return; } navigate("/pipelines"); }}
             sx={{ backgroundColor: "#238636", "&:hover": { backgroundColor: "#2ea043" } }}
           >
             Compose Pipeline
@@ -111,7 +117,46 @@ export default function Dashboard() {
         </Stack>
       </div>
 
-      {/* Restrained GitHub Metric Cards */}
+      {/* GitHub disconnected status banner */}
+      {!isGithubConnected && (
+        <Box
+          sx={{
+            backgroundColor: "#161b22",
+            border: "1px solid #e3b34133",
+            borderRadius: "6px",
+            p: 2,
+            mb: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <LinkOffOutlinedIcon sx={{ fontSize: 18, color: "#e3b341" }} />
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#f0f6fc" }}>
+                GitHub disconnected
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#8b949e" }}>
+                Dashboard is in read-only mode. Connect your GitHub account to resume operations.
+              </Typography>
+            </Box>
+          </Stack>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<GitHubIcon sx={{ fontSize: 14 }} />}
+            onClick={() => navigate("/connect-github")}
+            sx={{ borderColor: "#30363d", color: "#c9d1d9", flexShrink: 0, "&:hover": { borderColor: "#8b949e" } }}
+          >
+            Connect GitHub
+          </Button>
+        </Box>
+      )}
+
+      {/* Stats cards */}
       <div className="ph-stats-grid">
         {stats.map((s) => (
           <StatsCard key={s.id} {...s} loading={loading} />
