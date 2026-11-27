@@ -37,6 +37,8 @@ github:
   client-id: ${GITHUB_CLIENT_ID:}
   client-secret: ${GITHUB_CLIENT_SECRET:}
   callback-url: ${GITHUB_CALLBACK_URL:http://localhost:8080/api/v1/auth/github/callback}
+  api-url: ${GITHUB_API_URL:https://api.github.com}
+  token-encryption-key: ${GITHUB_TOKEN_ENCRYPTION_KEY:}
 
 # Admin seed credentials
 admin:

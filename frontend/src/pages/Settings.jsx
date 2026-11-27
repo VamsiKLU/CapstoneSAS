@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -13,10 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import AppShell from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../components/Notification";
@@ -162,12 +163,33 @@ export default function Settings() {
           {user?.githubConnected ? (
             <Stack spacing={2.5}>
               {/* Connected status */}
-              <Stack direction="row" spacing={1} alignItems="center">
-                <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 16, color: "#3fb950" }} />
-                <Typography variant="body2" sx={{ color: "#3fb950", fontWeight: 600 }}>
-                  Connected
-                </Typography>
-              </Stack>
+              {user.github?.repositoryAccessReady === false ? (
+                <Alert
+                  severity="warning"
+                  icon={<WarningAmberOutlinedIcon sx={{ fontSize: 18, color: "#e3b341" }} />}
+                  sx={{
+                    backgroundColor: "#0d1117",
+                    border: "1px solid rgba(210, 153, 34, 0.4)",
+                    color: "#c9d1d9",
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#f0f6fc", mb: 0.3 }}>
+                    GitHub repository permission required
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#8b949e", display: "block" }}>
+                    Your GitHub account is connected for identity, but public repository access (public_repo) has not been granted yet.
+                  </Typography>
+                </Alert>
+              ) : (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 16, color: "#3fb950" }} />
+                  <Typography variant="body2" sx={{ color: "#3fb950", fontWeight: 600 }}>
+                    {user.github?.repositoryAccessReady
+                      ? "Connected · Public repository access enabled"
+                      : "Connected"}
+                  </Typography>
+                </Stack>
+              )}
 
               {/* GitHub identity */}
               <Stack direction="row" spacing={2} alignItems="center">
@@ -216,7 +238,22 @@ export default function Settings() {
                 )}
               </Stack>
 
-              <Box>
+              <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                {user.github?.repositoryAccessReady === false && (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<GitHubIcon sx={{ fontSize: 15 }} />}
+                    onClick={handleConnect}
+                    disabled={connecting}
+                    sx={{
+                      backgroundColor: "#238636",
+                      "&:hover": { backgroundColor: "#2ea043" },
+                    }}
+                  >
+                    {connecting ? "Reconnecting..." : "Reconnect GitHub"}
+                  </Button>
+                )}
                 <Button
                   variant="outlined"
                   size="small"
@@ -230,7 +267,7 @@ export default function Settings() {
                 >
                   Disconnect GitHub
                 </Button>
-              </Box>
+              </Stack>
             </Stack>
           ) : (
             <Stack spacing={2}>

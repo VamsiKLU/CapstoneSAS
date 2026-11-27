@@ -46,8 +46,10 @@ import {
   stats,
 } from "../data/mockData";
 import * as buildService from "../services/buildService";
+import { isDemoModeEnabled } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useGitHubGuard } from "../hooks/useGitHubGuard";
+import { useNotification } from "../components/Notification";
 import { useNavigate } from "react-router-dom";
 import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -62,9 +64,10 @@ const NOTIF_ICONS = {
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [recentBuilds, setRecentBuilds] = useState(builds);
+  const [recentBuilds, setRecentBuilds] = useState(() => (isDemoModeEnabled() ? builds.slice(0, 8) : []));
   const { isGithubConnected } = useAuth();
   const guard = useGitHubGuard();
+  const { error: notifyError } = useNotification();
   const navigate = useNavigate();
 
   const load = async () => {
@@ -72,8 +75,16 @@ export default function Dashboard() {
     try {
       const history = await buildService.getBuildHistory();
       setRecentBuilds(history.slice(0, 8));
-    } catch {
-      setRecentBuilds(builds.slice(0, 8));
+    } catch (err) {
+      if (isDemoModeEnabled()) {
+        setRecentBuilds(builds.slice(0, 8));
+      } else {
+        setRecentBuilds([]);
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          notifyError("Authentication required to load build history.");
+        }
+      }
     } finally {
       setLoading(false);
     }

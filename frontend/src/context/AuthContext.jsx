@@ -20,9 +20,11 @@ export function AuthProvider({ children }) {
     try {
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
+      return currentUser;
     } catch {
       // 401 = no active session
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -40,13 +42,6 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (data) => {
     const u = await authService.register(data);
-    setUser(u);
-    return u;
-  }, []);
-
-  // Legacy alias used in AdminLogin -- maps to the unified login endpoint
-  const adminLogin = useCallback(async (credentials) => {
-    const u = await authService.login(credentials);
     setUser(u);
     return u;
   }, []);
@@ -89,7 +84,6 @@ export function AuthProvider({ children }) {
       needsGitHub,
       login,
       register,
-      adminLogin,
       logout,
       checkSession,
       refreshUser,
@@ -104,7 +98,6 @@ export function AuthProvider({ children }) {
       needsGitHub,
       login,
       register,
-      adminLogin,
       logout,
       checkSession,
       refreshUser,

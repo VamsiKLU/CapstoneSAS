@@ -1,59 +1,32 @@
-import api, { isNetworkError } from "./api";
-import { projects as mockProjects } from "../data/mockData";
+import api, { shouldUseDemoFallback } from "./api";
 
-let localProjects = [...mockProjects].map((p) => ({
-  ...p,
-  branch: p.branch || "main",
-  stack: p.stack || "Node.js",
-  repositoryUrl: p.repo,
-}));
+/**
+ * Project persistence API service.
+ * Uses /api/v1/projects on the backend.
+ * Never falls back on 401, 403, 404, 500 or other HTTP errors from a reachable backend.
+ */
 
 export async function getProjects() {
   try {
-    const { data } = await api.get("/projects");
-    return data;
+    const { data } = await api.get("/v1/projects");
+    return Array.isArray(data?.projects) ? data.projects : [];
   } catch (error) {
-    if (isNetworkError(error.original || error)) return localProjects;
+    if (shouldUseDemoFallback(error)) return [];
     throw error;
   }
 }
 
 export async function createProject(project) {
-  try {
-    const { data } = await api.post("/projects", project);
-    return data;
-  } catch (error) {
-    if (isNetworkError(error.original || error)) {
-      const created = { ...project, id: Date.now(), status: "Queued", lastBuild: "—" };
-      localProjects = [created, ...localProjects];
-      return created;
-    }
-    throw error;
-  }
+  const { data } = await api.post("/v1/projects", project);
+  return data?.project ?? data;
 }
 
 export async function updateProject(id, project) {
-  try {
-    const { data } = await api.put(`/projects/${id}`, project);
-    return data;
-  } catch (error) {
-    if (isNetworkError(error.original || error)) {
-      localProjects = localProjects.map((p) => (p.id === id ? { ...p, ...project } : p));
-      return localProjects.find((p) => p.id === id);
-    }
-    throw error;
-  }
+  const { data } = await api.put(`/v1/projects/${id}`, project);
+  return data?.project ?? data;
 }
 
 export async function deleteProject(id) {
-  try {
-    await api.delete(`/projects/${id}`);
-    return true;
-  } catch (error) {
-    if (isNetworkError(error.original || error)) {
-      localProjects = localProjects.filter((p) => p.id !== id);
-      return true;
-    }
-    throw error;
-  }
+  await api.delete(`/v1/projects/${id}`);
+  return true;
 }

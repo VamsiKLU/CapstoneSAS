@@ -1,4 +1,4 @@
-import api, { isNetworkError } from "./api";
+import api, { shouldUseDemoFallback } from "./api";
 import { builds as mockBuilds } from "../data/mockData";
 
 let localBuilds = [...mockBuilds];
@@ -8,7 +8,7 @@ export async function startBuild({ projectId, pipelineVersion }) {
     const { data } = await api.post("/build/start", { projectId, pipelineVersion });
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       const build = {
         id: `#${4900 + localBuilds.length}`,
         projectId,
@@ -39,7 +39,7 @@ export async function getBuildHistory() {
     const { data } = await api.get("/build/history");
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) return localBuilds;
+    if (shouldUseDemoFallback(error)) return localBuilds;
     throw error;
   }
 }
@@ -49,7 +49,7 @@ export async function getBuildStatus(id) {
     const { data } = await api.get(`/build/status/${id}`);
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       const build = localBuilds.find((b) => b.id === id || b.id === `#${id}`);
       if (!build) return { status: "Unknown" };
       if (build.status === "Running") {

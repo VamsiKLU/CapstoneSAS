@@ -1,4 +1,4 @@
-import api, { isNetworkError } from "./api";
+import api, { isDemoModeEnabled, shouldUseDemoFallback } from "./api";
 import { pipelines as mockPipelines, pipelineVersions as mockVersions } from "../data/mockData";
 
 let localPipelines = [...mockPipelines];
@@ -9,7 +9,7 @@ export async function getPipelines() {
     const { data } = await api.get("/pipelines");
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) return localPipelines;
+    if (shouldUseDemoFallback(error)) return localPipelines;
     throw error;
   }
 }
@@ -19,7 +19,7 @@ export async function getPipeline(id) {
     const { data } = await api.get(`/pipelines/${id}`);
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       return localPipelines.find((p) => p.id === Number(id));
     }
     throw error;
@@ -31,7 +31,7 @@ export async function createPipeline(pipeline) {
     const { data } = await api.post("/pipelines", pipeline);
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       const created = { ...pipeline, id: Date.now(), projects: 0, status: "Active" };
       localPipelines = [created, ...localPipelines];
       return created;
@@ -45,7 +45,7 @@ export async function updatePipeline(id, pipeline) {
     const { data } = await api.put(`/pipelines/${id}`, pipeline);
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       localPipelines = localPipelines.map((p) => (p.id === id ? { ...p, ...pipeline } : p));
       return localPipelines.find((p) => p.id === id);
     }
@@ -58,12 +58,15 @@ export async function getPipelineVersions() {
     const { data } = await api.get("/pipelines/versions");
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) return localVersions;
+    if (shouldUseDemoFallback(error)) return localVersions;
     throw error;
   }
 }
 
 export async function clonePipeline(id) {
+  if (!isDemoModeEnabled()) {
+    throw new Error("Pipeline cloning endpoint is not available yet.");
+  }
   const source = localPipelines.find((p) => p.id === id);
   if (!source) return null;
   const clone = { ...source, id: Date.now(), name: `${source.name}-clone`, version: "v1" };
@@ -72,6 +75,9 @@ export async function clonePipeline(id) {
 }
 
 export async function rollbackPipelineVersion(name, version) {
+  if (!isDemoModeEnabled()) {
+    throw new Error("Pipeline version rollback endpoint is not available yet.");
+  }
   const rolled = localVersions.find((v) => v.name === name && v.version === version);
   return rolled || null;
 }

@@ -6,13 +6,34 @@ import axios from "axios";
 export const ERROR_MESSAGES = {
   AUTH_REQUIRED: "Your session has expired. Please sign in again.",
   GITHUB_NOT_CONNECTED: "Connect your GitHub account to continue.",
+  GITHUB_REAUTH_REQUIRED:
+    "Your GitHub authorization has expired or been revoked. Reconnect your GitHub account to continue.",
+  GITHUB_SCOPE_INSUFFICIENT:
+    "Reconnect your GitHub account to grant public repository access.",
+  GITHUB_PRIVATE_REPO_FORBIDDEN:
+    "Only public GitHub repositories are supported.",
+  GITHUB_RATE_LIMIT: "GitHub API rate limit exceeded. Please try again later.",
+  GITHUB_FORBIDDEN:
+    "GitHub denied access to the requested resource. Verify repository permissions or reconnect GitHub.",
+  GITHUB_NOT_FOUND: "The requested GitHub repository was not found.",
+  GITHUB_TIMEOUT: "GitHub took too long to respond. Please try again.",
+  GITHUB_UNAVAILABLE: "Unable to reach GitHub right now. Please try again.",
+  GITHUB_INVALID_RESPONSE: "Received an unexpected response from GitHub.",
   GITHUB_EMAIL_MISMATCH:
     "GitHub authorization could not be completed because the email addresses do not match.",
   GITHUB_AUTH_FAILED:
     "Unable to complete GitHub authorization. Please try again.",
+  BACKEND_UNAVAILABLE:
+    "Unable to reach the Pipeline Hub backend. Verify the server is running and try again.",
+  INTERNAL_ERROR: "An unexpected server error occurred. Please try again.",
+  PROJECT_CONFLICT: "A project with this repository and branch already exists.",
+  PROJECT_NOT_FOUND: "Project not found.",
+  PROJECT_LIST_FAILED: "Unable to load projects. Please try again.",
+  PROJECT_CREATE_FAILED: "Unable to create project. Please try again.",
+  PROJECT_UPDATE_FAILED: "Unable to update project. Please try again.",
   SESSION_EXPIRED: "Your session has expired. Please sign in again.",
   ACCOUNT_DELETION_FAILED: "Unable to delete your account. Please try again.",
-  NETWORK_ERROR: "Unable to complete this action. Please try again.",
+  NETWORK_ERROR: "Unable to reach the Pipeline Hub server. Please try again.",
   FORBIDDEN: "You do not have permission to access this area.",
   REGISTRATION_FAILED: "Unable to create account. Please try again.",
   VALIDATION_ERROR: "Please check your input and try again.",
@@ -25,17 +46,23 @@ export const ERROR_MESSAGES = {
 const api = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
+  xsrfCookieName: "XSRF-TOKEN",
+  xsrfHeaderName: "X-XSRF-TOKEN",
   headers: { "Content-Type": "application/json" },
 });
 
 /**
  * Extracts a professional error message from an Axios error response.
+ * Preserves server-supplied messages and codes when present.
  */
 export function extractErrorMessage(err) {
   const code = err?.response?.data?.code;
   const serverMsg = err?.response?.data?.message;
   if (code && ERROR_MESSAGES[code]) return ERROR_MESSAGES[code];
   if (serverMsg) return serverMsg;
+  if (!err?.response && err?.message === "Network Error") {
+    return ERROR_MESSAGES.BACKEND_UNAVAILABLE;
+  }
   if (err?.message) return err.message;
   return ERROR_MESSAGES.NETWORK_ERROR;
 }

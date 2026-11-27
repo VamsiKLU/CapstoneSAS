@@ -7,6 +7,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Landing from "../pages/Landing";
 import Register from "../pages/Register";
 import ConnectGitHub from "../pages/ConnectGitHub";
+import AuthCallback from "../pages/AuthCallback";
 import AuthError from "../pages/AuthError";
 import NotFound from "../pages/NotFound";
 
@@ -49,6 +50,7 @@ export default function AppRoutes() {
       <Route path="/" element={<RootRoute />} />
       <Route path="/register" element={<Register />} />
       <Route path="/connect-github" element={<ConnectGitHub />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/error" element={<AuthError />} />
 
       {/* Developer routes -- DEVELOPER role only */}

@@ -1,7 +1,10 @@
 package io.pipelinehub.service;
 
 import io.pipelinehub.dto.RegisterRequest;
+import io.pipelinehub.entity.GitHubConnection;
 import io.pipelinehub.entity.User;
+import io.pipelinehub.repository.GitHubConnectionRepository;
+import io.pipelinehub.repository.ProjectRepository;
 import io.pipelinehub.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 public class UserService implements ApplicationRunner {
 
@@ -20,6 +25,18 @@ public class UserService implements ApplicationRunner {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GitHubConnectionRepository gitHubConnectionRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
+
+    @Autowired
+    private TokenEncryptionService tokenEncryptionService;
+
+    @Autowired
+    private GitHubService gitHubService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -74,11 +91,39 @@ public class UserService implements ApplicationRunner {
     // ----- GitHub connection -----
 
     @Transactional
-    public User connectGitHub(Long userId, String githubUserId, String githubUsername,
-                              String githubName, String githubEmail,
-                              String githubAvatarUrl, String githubProfileUrl) {
+    public User connectGitHub(Long userId,
+                              String accessToken,
+                              String tokenType,
+                              String scopes,
+                              Instant tokenExpiresAt,
+                              String githubUserId,
+                              String githubUsername,
+                              String githubName,
+                              String githubEmail,
+                              String githubAvatarUrl,
+                              String githubProfileUrl) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        // Encrypt before mutating user state so encryption failure aborts the transaction cleanly
+        String encryptedToken = tokenEncryptionService.encrypt(accessToken);
+        Instant now = Instant.now();
+
+        GitHubConnection connection = gitHubConnectionRepository.findByUserId(userId)
+                .orElseGet(GitHubConnection::new);
+        connection.setUser(user);
+        connection.setEncryptedAccessToken(encryptedToken);
+        connection.setTokenType(tokenType);
+        connection.setScopes(scopes);
+        connection.setGithubUserId(githubUserId);
+        connection.setGithubUsername(githubUsername);
+        connection.setStatus(GitHubConnection.ConnectionStatus.ACTIVE);
+        connection.setLastValidatedAt(now);
+        connection.setTokenExpiresAt(tokenExpiresAt);
+        if (connection.getConnectedAt() == null) {
+            connection.setConnectedAt(now);
+        }
+        gitHubConnectionRepository.save(connection);
 
         user.setGithubConnected(true);
         user.setGithubUserId(githubUserId);
@@ -95,6 +140,19 @@ public class UserService implements ApplicationRunner {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
+        gitHubConnectionRepository.findByUserId(userId).ifPresent(connection -> {
+            try {
+                if (tokenEncryptionService.isConfigured()) {
+                    String rawToken = tokenEncryptionService.decrypt(connection.getEncryptedAccessToken());
+                    gitHubService.revokeToken(rawToken);
+                }
+            } catch (Exception e) {
+                log.warn("[UserService] Unable to revoke remote GitHub token during disconnect for user id={}", userId);
+            }
+            gitHubConnectionRepository.delete(connection);
+            gitHubConnectionRepository.flush();
+        });
+
         user.setGithubConnected(false);
         user.setGithubUserId(null);
         user.setGithubUsername(null);
@@ -105,10 +163,34 @@ public class UserService implements ApplicationRunner {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void markGitHubReauthRequired(Long userId) {
+        gitHubConnectionRepository.findByUserId(userId).ifPresent(connection -> {
+            connection.setStatus(GitHubConnection.ConnectionStatus.REAUTH_REQUIRED);
+            gitHubConnectionRepository.save(connection);
+        });
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setGithubConnected(false);
+            userRepository.save(user);
+        });
+    }
+
+    public GitHubConnection findActiveGitHubConnection(Long userId) {
+        return gitHubConnectionRepository.findByUserId(userId)
+                .filter(conn -> conn.getStatus() == GitHubConnection.ConnectionStatus.ACTIVE)
+                .orElse(null);
+    }
+
     // ----- Account deletion -----
 
     @Transactional
     public void deleteAccount(Long userId) {
+        projectRepository.deleteByOwnerId(userId);
+        projectRepository.flush();
+        gitHubConnectionRepository.findByUserId(userId).ifPresent(connection -> {
+            gitHubConnectionRepository.delete(connection);
+            gitHubConnectionRepository.flush();
+        });
         userRepository.deleteById(userId);
     }
 

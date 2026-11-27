@@ -3,6 +3,7 @@ package io.pipelinehub.controller;
 import io.pipelinehub.dto.*;
 import io.pipelinehub.entity.User;
 import io.pipelinehub.service.GitHubService;
+import io.pipelinehub.service.TokenEncryptionService;
 import io.pipelinehub.service.UserMapper;
 import io.pipelinehub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +47,9 @@ public class AuthController {
 
     @Autowired
     private GitHubService gitHubService;
+
+    @Autowired
+    private TokenEncryptionService tokenEncryptionService;
 
     @Value("${frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -153,7 +157,7 @@ public class AuthController {
     // ------------------------------------------------------------------
     @GetMapping("/github")
     public ResponseEntity<?> initiateGitHub(HttpServletRequest httpRequest) {
-        if (!gitHubService.isConfigured()) {
+        if (!gitHubService.isConfigured() || !tokenEncryptionService.isConfigured()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(new ApiError("GITHUB_NOT_CONFIGURED",
                             "GitHub authorization is not configured. Please contact the platform administrator."));
@@ -173,7 +177,7 @@ public class AuthController {
         String authUrl = "https://github.com/login/oauth/authorize"
                 + "?client_id=" + gitHubService.getClientId()
                 + "&redirect_uri=" + URLEncoder.encode(gitHubService.getCallbackUrl(), StandardCharsets.UTF_8)
-                + "&scope=read:user+user:email"
+                + "&scope=read:user+user:email+public_repo"
                 + "&state=" + state;
 
         return ResponseEntity.ok(Map.of("authUrl", authUrl));
@@ -224,8 +228,8 @@ public class AuthController {
         }
 
         try {
-            String accessToken = gitHubService.exchangeCodeForToken(code, state, expectedState);
-            GitHubService.GitHubProfile profile = gitHubService.fetchUserProfile(accessToken);
+            GitHubService.GitHubTokenResult tokenResult = gitHubService.exchangeCodeForToken(code, state, expectedState);
+            GitHubService.GitHubProfile profile = gitHubService.fetchUserProfile(tokenResult.accessToken());
 
             // Email matching -- backend validates, never trusts client
             String pipelineHubEmail = user.getEmail().toLowerCase().trim();
@@ -238,13 +242,14 @@ public class AuthController {
             }
 
             userService.connectGitHub(userId,
+                    tokenResult.accessToken(), tokenResult.tokenType(), tokenResult.scope(), tokenResult.expiresAt(),
                     profile.id(), profile.username(), profile.name(),
                     profile.email(), profile.avatarUrl(), profile.profileUrl());
 
             response.sendRedirect(frontendUrl + "/dashboard");
 
         } catch (Exception e) {
-            log.error("[AuthController] GitHub callback error", e);
+            log.error("[AuthController] GitHub callback failed: {}", e.getMessage());
             String msg = URLEncoder.encode("Unable to complete GitHub authorization. Please try again.", StandardCharsets.UTF_8);
             response.sendRedirect(frontendUrl + "/connect-github?error=GITHUB_AUTH_FAILED&msg=" + msg);
         }

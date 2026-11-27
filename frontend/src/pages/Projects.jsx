@@ -34,6 +34,7 @@ import VersionBadge from "../components/VersionBadge";
 import EmptyState from "../components/EmptyState";
 import Loader from "../components/Loader";
 import { useNotification } from "../components/Notification";
+import { extractErrorMessage } from "../services/authService";
 import * as projectService from "../services/projectService";
 import * as buildService from "../services/buildService";
 import "../styles/dashboard.css";
@@ -43,6 +44,7 @@ export default function Projects() {
   const { success, error } = useNotification();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
   const [open, setOpen] = useState(false);
@@ -51,10 +53,14 @@ export default function Projects() {
 
   const load = async () => {
     setLoading(true);
+    setLoadError("");
     try {
       setRows(await projectService.getProjects());
     } catch (err) {
-      error(err.message || "Failed to load projects.");
+      setRows([]);
+      const msg = extractErrorMessage(err) || "Failed to load projects.";
+      setLoadError(msg);
+      error(msg);
     } finally {
       setLoading(false);
     }
@@ -70,7 +76,9 @@ export default function Projects() {
         (r) =>
           (filter === "All" || r.status === filter) &&
           (r.name?.toLowerCase().includes(query.toLowerCase()) ||
-            (r.repo || r.repositoryUrl || "").toLowerCase().includes(query.toLowerCase())),
+            (r.repositoryFullName || r.repo || r.repositoryUrl || "")
+              .toLowerCase()
+              .includes(query.toLowerCase())),
       ),
     [rows, query, filter],
   );
@@ -78,17 +86,19 @@ export default function Projects() {
   const save = async () => {
     try {
       if (draft.id) {
-        await projectService.updateProject(draft.id, draft);
+        await projectService.updateProject(draft.id, {
+          name: draft.name,
+          branch: draft.branch,
+          stack: draft.stack,
+          pipelineVersion: draft.version || draft.pipelineVersion || "v1",
+        });
         success("Project updated successfully.");
-      } else {
-        await projectService.createProject(draft);
-        success("Project registered successfully.");
       }
       setOpen(false);
       setDraft({});
       load();
     } catch (err) {
-      error(err.message || "Save failed.");
+      error(extractErrorMessage(err));
     }
   };
 
@@ -98,17 +108,20 @@ export default function Projects() {
       success("Project deleted from platform.");
       load();
     } catch (err) {
-      error(err.message || "Delete failed.");
+      error(extractErrorMessage(err));
     }
   };
 
   const triggerBuild = async (project) => {
     setBuilding(project.id);
     try {
-      await buildService.startBuild({ projectId: project.id, pipelineVersion: project.version || "v1" });
-      success(`Build queued for ${project.name} on ${project.version || "v1"}.`);
+      await buildService.startBuild({
+        projectId: project.id,
+        pipelineVersion: project.version || project.pipelineVersion || "v1",
+      });
+      success(`Build queued for ${project.name} on ${project.version || project.pipelineVersion || "v1"}.`);
     } catch (err) {
-      error(err.message || "Build failed to trigger.");
+      error(extractErrorMessage(err));
     } finally {
       setBuilding(null);
     }
@@ -166,7 +179,7 @@ export default function Projects() {
             sx={{ minWidth: 160 }}
             onChange={(e) => setFilter(e.target.value)}
           >
-            {["All", "Passing", "Failed", "Running", "Queued"].map((s) => (
+            {["All", "Registered", "Passing", "Failed", "Running", "Queued"].map((s) => (
               <MenuItem key={s} value={s}>
                 {s}
               </MenuItem>
@@ -176,10 +189,21 @@ export default function Projects() {
 
         {loading ? (
           <Loader message="Loading registered projects…" />
+        ) : loadError ? (
+          <EmptyState
+            title="Unable to load projects"
+            description={loadError}
+            actionLabel="Retry"
+            onAction={load}
+          />
         ) : filtered.length === 0 ? (
           <EmptyState
             title="No projects found"
-            description="No repositories matched your filters. Register a project or reset filters."
+            description={
+              rows.length === 0
+                ? "You have not registered any projects yet. Connect a public GitHub repository to create your first project."
+                : "No projects matched your filters. Adjust search filters or register a new project."
+            }
             actionLabel="Add Project"
             onAction={() => navigate("/projects/create")}
           />
@@ -207,7 +231,7 @@ export default function Projects() {
                     <TableCell sx={{ fontFamily: "var(--ph-font-mono)", fontSize: "12px", color: "#58a6ff" }}>
                       <Stack direction="row" spacing={0.8} alignItems="center">
                         <GitHubIcon sx={{ fontSize: 14, color: "#8b949e" }} />
-                        <span>{p.repo || p.repositoryUrl}</span>
+                        <span>{p.repositoryFullName || p.repo || p.repositoryUrl}</span>
                       </Stack>
                     </TableCell>
                     <TableCell sx={{ fontFamily: "var(--ph-font-mono)", fontSize: "12px", color: "#c9d1d9" }}>
@@ -234,13 +258,13 @@ export default function Projects() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <VersionBadge version={p.version} />
+                      <VersionBadge version={p.version || p.pipelineVersion || "v1"} />
                     </TableCell>
                     <TableCell>
-                      <StatusChip value={p.status} />
+                      <StatusChip value={p.status || "Registered"} />
                     </TableCell>
                     <TableCell sx={{ fontFamily: "var(--ph-font-mono)", fontSize: "11.5px", color: "#8b949e" }}>
-                      {p.lastBuild}
+                      {p.lastBuild || "—"}
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={0.5} justifyContent="flex-end">
@@ -258,7 +282,7 @@ export default function Projects() {
                           <IconButton
                             size="small"
                             onClick={() => {
-                              setDraft(p);
+                              setDraft({ ...p, version: p.version || p.pipelineVersion || "v1" });
                               setOpen(true);
                             }}
                           >
@@ -299,10 +323,10 @@ export default function Projects() {
               fullWidth
             />
             <TextField
-              label="Repository URL"
+              label="Repository"
               size="small"
-              value={draft.repo || draft.repositoryUrl || ""}
-              onChange={(e) => setDraft({ ...draft, repo: e.target.value, repositoryUrl: e.target.value })}
+              value={draft.repositoryFullName || draft.repo || draft.repositoryUrl || ""}
+              disabled
               fullWidth
             />
             <TextField
@@ -323,8 +347,8 @@ export default function Projects() {
               select
               label="Assigned Pipeline Version"
               size="small"
-              value={draft.version || "v1"}
-              onChange={(e) => setDraft({ ...draft, version: e.target.value })}
+              value={draft.version || draft.pipelineVersion || "v1"}
+              onChange={(e) => setDraft({ ...draft, version: e.target.value, pipelineVersion: e.target.value })}
               fullWidth
             >
               {["v1", "v2", "v3"].map((v) => (

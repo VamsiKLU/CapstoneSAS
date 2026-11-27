@@ -33,7 +33,7 @@ dist-ssr
 *.sw?
 
 # Spring Boot Backend
-springboot-backend/.env
-springboot-backend/target/
+backend/.env
+backend/target/
 target/
 *.jar

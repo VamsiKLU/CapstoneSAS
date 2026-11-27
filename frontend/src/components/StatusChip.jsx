@@ -22,6 +22,7 @@ const STATUS_CONFIG = {
 
   supported: { label: "Supported", bg: "rgba(56, 139, 253, 0.15)", border: "rgba(56, 139, 253, 0.4)", text: "#58a6ff", dot: "#58a6ff" },
   mitigated: { label: "Mitigated", bg: "rgba(56, 139, 253, 0.15)", border: "rgba(56, 139, 253, 0.4)", text: "#58a6ff", dot: "#58a6ff" },
+  registered: { label: "Registered", bg: "rgba(56, 139, 253, 0.15)", border: "rgba(56, 139, 253, 0.4)", text: "#58a6ff", dot: "#58a6ff" },
 
   deprecated: { label: "Deprecated", bg: "rgba(110, 118, 129, 0.15)", border: "rgba(110, 118, 129, 0.4)", text: "#8b949e", dot: "#8b949e" },
   cancelled: { label: "Cancelled", bg: "rgba(110, 118, 129, 0.15)", border: "rgba(110, 118, 129, 0.4)", text: "#8b949e", dot: "#8b949e" },

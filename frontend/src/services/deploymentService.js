@@ -1,4 +1,4 @@
-import api, { isNetworkError } from "./api";
+import api, { isDemoModeEnabled, shouldUseDemoFallback } from "./api";
 import { dockerImages, pods, rollbacks } from "../data/mockData";
 
 let localDeployments = dockerImages.map((img, i) => ({
@@ -17,7 +17,7 @@ export async function deploy({ projectId, imageTag }) {
     const { data } = await api.post("/deploy", { projectId, imageTag });
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       const deployment = {
         id: Date.now(),
         projectId,
@@ -45,7 +45,7 @@ export async function getDeployments() {
     const { data } = await api.get("/deployments");
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) return localDeployments;
+    if (shouldUseDemoFallback(error)) return localDeployments;
     throw error;
   }
 }
@@ -55,7 +55,7 @@ export async function getDeployment(id) {
     const { data } = await api.get(`/deployments/${id}`);
     return data;
   } catch (error) {
-    if (isNetworkError(error.original || error)) {
+    if (shouldUseDemoFallback(error)) {
       return localDeployments.find((d) => d.id === Number(id));
     }
     throw error;
@@ -63,6 +63,9 @@ export async function getDeployment(id) {
 }
 
 export async function rollbackDeployment(project, toTag) {
+  if (!isDemoModeEnabled()) {
+    throw new Error("Deployment rollback endpoint is not available yet.");
+  }
   return {
     id: `RB-${Date.now()}`,
     service: project,

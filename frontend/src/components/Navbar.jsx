@@ -151,11 +151,11 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
           sx={{ p: 0.5, border: "1px solid #30363d" }}
         >
           <Avatar
-            src={user?.avatar_url || undefined}
+            src={user?.github?.avatarUrl || undefined}
             alt={user?.name || "User"}
             sx={{ width: 26, height: 26, bgcolor: "#21262d", color: "#f0f6fc", fontSize: 11, fontWeight: 700 }}
           >
-            {!user?.avatar_url ? initials : null}
+            {!user?.github?.avatarUrl ? initials : null}
           </Avatar>
         </IconButton>
 
@@ -170,7 +170,7 @@ export default function Navbar({ title, subtitle, onToggleSidebar, collapsed }) 
               {user?.name || "Developer"}
             </Typography>
             <Typography variant="caption" sx={{ color: "#8b949e", display: "block" }} noWrap>
-              {user?.github_username ? `@${user.github_username}` : (user?.email || "Developer")}
+              {user?.github?.username ? `@${user.github.username}` : (user?.email || "Developer")}
             </Typography>
             <Box
               component="span"

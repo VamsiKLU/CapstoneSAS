@@ -44,22 +44,22 @@ PipelineHub/
 │   │   └── App.jsx
 │   ├── package.json
 │   └── vite.config.js
-├── springboot-backend/           # Java Spring Boot backend
+├── backend/                      # Java Spring Boot backend
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── java/io/pipelinehub/
 │   │   │   │   ├── config/       # SecurityConfig, JpaConfig
-│   │   │   │   ├── controller/   # AuthController, AccountController, HealthController
-│   │   │   │   ├── dto/          # UserDto, LoginRequest, RegisterRequest, ApiError
-│   │   │   │   ├── entity/       # User entity
-│   │   │   │   ├── exception/    # GlobalExceptionHandler
-│   │   │   │   ├── repository/   # UserRepository
+│   │   │   │   ├── controller/   # AuthController, AccountController, GitHubController, HealthController
+│   │   │   │   ├── dto/          # UserDto, LoginRequest, RegisterRequest, GitHubRepoPageDto, GitHubBranchPageDto, ApiError
+│   │   │   │   ├── entity/       # User, GitHubConnection
+│   │   │   │   ├── exception/    # GlobalExceptionHandler, GitHubApiException
+│   │   │   │   ├── repository/   # UserRepository, GitHubConnectionRepository
 │   │   │   │   ├── security/     # SessionAuthenticationFilter, UserDetailsService
-│   │   │   │   ├── service/      # UserService, GitHubService, UserMapper
+│   │   │   │   ├── service/      # UserService, GitHubService, TokenEncryptionService, UserMapper
 │   │   │   │   └── PipelineHubApplication.java
 │   │   │   └── resources/
 │   │   │       └── application.yml
-│   │   └── test/                 # Test suites (OAuth verification, Auth integration)
+│   │   └── test/                 # Test suites (OAuth verification, Auth & encryption integration)
 │   ├── .env.example
 │   ├── pom.xml
 │   └── start.sh
@@ -95,7 +95,7 @@ CREATE DATABASE IF NOT EXISTS pipelinehub;
 
 1. Navigate to the backend directory:
    ```bash
-   cd springboot-backend
+   cd backend
    ```
 
 2. Copy the environment template:
@@ -112,6 +112,7 @@ CREATE DATABASE IF NOT EXISTS pipelinehub;
    - `GITHUB_CLIENT_ID`: Your GitHub OAuth App Client ID
    - `GITHUB_CLIENT_SECRET`: Your GitHub OAuth App Client Secret
    - `GITHUB_CALLBACK_URL`: `http://localhost:8080/api/v1/auth/github/callback`
+   - `GITHUB_TOKEN_ENCRYPTION_KEY`: Base64-encoded 32-byte (256-bit) AES key for encrypting GitHub OAuth access tokens at rest. Generate one locally with `openssl rand -base64 32` (never commit `.env` or real keys)
    - `ADMIN_EMAIL`: Admin email for platform administrator account (default: `admin@pipelinehub.io`)
    - `ADMIN_PASSWORD`: Admin password for platform administrator account
 
@@ -152,6 +153,11 @@ CREATE DATABASE IF NOT EXISTS pipelinehub;
    npm run dev
    ```
 
+   Optional development-only demo mode for unimplemented UI modules (never substitutes for backend auth/API errors):
+   ```bash
+   VITE_DEMO_MODE=true npm run dev
+   ```
+
 4. Open `http://localhost:5173` in your browser.
 
 ---
@@ -161,7 +167,7 @@ CREATE DATABASE IF NOT EXISTS pipelinehub;
 To run the automated Spring Boot test suite:
 
 ```bash
-cd springboot-backend
+cd backend
 mvn test
 ```
 
@@ -192,6 +198,15 @@ When configuring your GitHub OAuth App in GitHub Developer Settings (GitHub Sett
 4. Clicking "Connect with GitHub" initiates the OAuth flow via Spring Boot (`/api/v1/auth/github`).
 5. GitHub redirects back to Spring Boot (`/api/v1/auth/github/callback`).
 6. Spring Boot validates the OAuth state parameter, exchanges the code for an access token server-side, and retrieves the verified GitHub email.
-7. Spring Boot compares the GitHub email with the registered account email. If they match, the connection is stored and the user is redirected to `/dashboard`.
-8. If the emails do not match, the connection is rejected and the user is returned to `/connect-github` with an explanatory notification.
-9. Administrators use the same sign-in page with their admin credentials; admin accounts do not require GitHub connection.
+7. Spring Boot compares the GitHub email with the registered account email. If they match, the OAuth access token is AES-256-GCM encrypted and stored server-side (`github_connections`), the connection state is saved, and the user is redirected to `/dashboard`. Tokens are never returned to the frontend.
+8. If the emails do not match, no connection or token is stored and the user is returned to `/connect-github` with an explanatory notification.
+9. Disconnecting GitHub from `/settings` removes the stored GitHub credentials (and attempts best-effort token revocation on GitHub) while preserving the PipelineHub account and application data; users can reconnect via `/connect-github` or `/settings`.
+10. Administrators use the same sign-in page with their admin credentials; admin accounts do not require GitHub connection.
+11. State-changing API requests (`POST`, `DELETE`, etc.) use Spring Security SPA CSRF protection (`XSRF-TOKEN` cookie + `X-XSRF-TOKEN` header).
+
+### Approved OAuth Scope & Repository Endpoints
+
+- **Approved GitHub OAuth Scope**: `read:user user:email public_repo` (public repositories only; private repositories remain inaccessible).
+- **Read-only Repository Endpoints** (authenticated `DEVELOPER` with active GitHub connection only):
+  - `GET /api/v1/github/repos?page=1&perPage=30` — lists accessible public repositories with pagination metadata.
+  - `GET /api/v1/github/repos/{owner}/{repo}/branches?page=1&perPage=30` — lists repository branches with pagination metadata.

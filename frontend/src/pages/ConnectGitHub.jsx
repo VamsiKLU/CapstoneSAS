@@ -103,6 +103,7 @@ export default function ConnectGitHub() {
         <Typography variant="body2" sx={{ color: "#8b949e", lineHeight: 1.7, mb: 4, maxWidth: 380, mx: "auto" }}>
           Connect your GitHub account to continue using Pipeline Hub.
           Your GitHub email must match the email registered for this account.
+          GitHub authorization requests read access to your identity and public repository access to browse repositories and branches.
         </Typography>
 
         {user?.email && (

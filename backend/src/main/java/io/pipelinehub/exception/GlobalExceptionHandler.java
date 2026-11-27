@@ -17,6 +17,12 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(GitHubApiException.class)
+    public ResponseEntity<ApiError> handleGitHubApi(GitHubApiException ex) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(new ApiError(ex.getCode(), ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         String msg = ex.getBindingResult().getFieldErrors().stream()
@@ -36,6 +42,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
         log.error("[GlobalExceptionHandler] Unhandled error", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiError("NETWORK_ERROR", "An unexpected error occurred. Please try again."));
+                .body(new ApiError("INTERNAL_ERROR", "An unexpected server error occurred. Please try again."));
     }
 }

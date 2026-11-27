@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "github.client-id=Ov23lisRnZ4J0WJR25Gx",
     "github.client-secret=test-secret",
     "github.callback-url=http://localhost:8080/api/v1/auth/github/callback",
+    "github.token-encryption-key=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
     "frontend.url=http://localhost:5173"
 })
 class OAuthVerificationTest {
@@ -116,9 +117,16 @@ class OAuthVerificationTest {
         assertEquals(expectedCallbackUrl, decodedRedirectUri,
                 "Decoded redirect_uri must exactly match authoritative Spring Boot callback URL");
 
-        // 3. Verify scope
-        assertTrue(queryParams.get("scope").contains("read:user"));
-        assertTrue(queryParams.get("scope").contains("user:email"));
+        // 3. Verify exact approved scopes and no broader permissions
+        String scope = queryParams.get("scope");
+        assertNotNull(scope, "scope parameter must be present");
+        java.util.Set<String> scopeTokens = new java.util.HashSet<>(
+                java.util.Arrays.asList(scope.trim().split("\\s+")));
+        assertEquals(java.util.Set.of("read:user", "user:email", "public_repo"), scopeTokens,
+                "OAuth scope must contain exactly read:user, user:email, public_repo");
+        assertFalse(scopeTokens.contains("repo"));
+        assertFalse(scopeTokens.contains("workflow"));
+        assertFalse(scopeTokens.contains("delete_repo"));
 
         // 4. Verify state
         String state = queryParams.get("state");

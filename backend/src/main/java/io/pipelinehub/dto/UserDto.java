@@ -19,6 +19,7 @@ public class UserDto {
         private String email;
         private String avatarUrl;
         private String profileUrl;
+        private Boolean repositoryAccessReady;
 
         public String getUserId() { return userId; }
         public void setUserId(String userId) { this.userId = userId; }
@@ -32,6 +33,8 @@ public class UserDto {
         public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
         public String getProfileUrl() { return profileUrl; }
         public void setProfileUrl(String profileUrl) { this.profileUrl = profileUrl; }
+        public Boolean getRepositoryAccessReady() { return repositoryAccessReady; }
+        public void setRepositoryAccessReady(Boolean repositoryAccessReady) { this.repositoryAccessReady = repositoryAccessReady; }
     }
 
     public Long getId() { return id; }
