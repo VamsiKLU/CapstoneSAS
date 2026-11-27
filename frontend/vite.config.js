@@ -7,16 +7,13 @@ export default defineConfig({
     port: 5173,
     open: true,
     proxy: {
-      "/auth": {
-        target: "http://localhost:3001",
-        changeOrigin: true,
-        secure: false,
-      },
       "/api": {
-        target: "http://localhost:3001",
+        target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
       },
+      // GitHub OAuth callback is handled server-side.
+      // The backend redirects the browser directly, no proxy needed.
     },
   },
 });

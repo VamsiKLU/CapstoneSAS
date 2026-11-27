@@ -1,158 +1,206 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import {
   Alert,
   Box,
   Button,
-  Divider,
   IconButton,
   InputAdornment,
-  MenuItem,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/VisibilityOutlined";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOffOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import ViewInArOutlinedIcon from "@mui/icons-material/ViewInArOutlined";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../components/Notification";
+import { extractErrorMessage } from "../services/authService";
 import Loader from "../components/Loader";
-import "../styles/dashboard.css";
+import "../styles/auth.css";
 
 export default function Register() {
-  const navigate = useNavigate();
-  const { register, isAuthenticated, loading: authLoading } = useAuth();
+  const { register, isAuthenticated, loading: authLoading, needsGitHub } = useAuth();
   const { success, error: notifyError } = useNotification();
-  const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    role: "Developer",
+    confirmPassword: "",
   });
 
-  if (authLoading) return <Loader fullScreen message="Loading session…" />;
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (authLoading) return <Loader fullScreen message="Loading session..." />;
+  if (isAuthenticated) {
+    if (needsGitHub) return <Navigate to="/connect-github" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleChange = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.password) {
-      setError("All fields are required.");
+    if (!form.name || !form.email || !form.password || !form.confirmPassword) {
+      setFormError("All fields are required.");
       return;
     }
-    setError("");
-    setLoading(true);
+    if (form.password !== form.confirmPassword) {
+      setFormError("Passwords do not match.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setFormError("Password must be at least 8 characters.");
+      return;
+    }
+    setFormError("");
+    setSubmitting(true);
     try {
       await register(form);
-      success("Account created successfully. Welcome to PipelineHub.");
-      navigate("/dashboard");
+      success("Account created. Connect your GitHub account to continue.");
+      // Navigation handled by auth state change
     } catch (err) {
-      const msg = err.message || "Registration failed.";
-      setError(msg);
+      const msg = extractErrorMessage(err);
+      setFormError(msg);
       notifyError(msg);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="ph-auth-form-wrap" style={{ minHeight: "100vh", backgroundColor: "#0d1117" }}>
       <form className="ph-auth-card" onSubmit={submit} style={{ maxWidth: 440 }}>
-        <Stack direction="row" spacing={1.2} alignItems="center" sx={{ mb: 2 }}>
-          <div className="ph-logo-mark" style={{ width: 28, height: 28 }}>
+        {/* Brand */}
+        <Stack direction="row" spacing={1.2} alignItems="center" sx={{ mb: 3 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: "7px",
+              backgroundColor: "#161b22",
+              border: "1px solid #30363d",
+              display: "grid",
+              placeItems: "center",
+              color: "#58a6ff",
+            }}
+          >
             <ViewInArOutlinedIcon sx={{ fontSize: 16 }} />
-          </div>
+          </Box>
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#f0f6fc" }}>
             Pipeline<span style={{ color: "#58a6ff" }}>Hub</span>
           </Typography>
         </Stack>
 
         <Typography variant="h6" sx={{ fontWeight: 600, color: "#f0f6fc", mb: 0.5 }}>
-          Create your developer account
+          Create your account
         </Typography>
-        <Typography variant="body2" sx={{ color: "#8b949e", mb: 2.5 }}>
-          Access reusable CI components and manage pipeline dependencies.
+        <Typography variant="body2" sx={{ color: "#8b949e", mb: 3 }}>
+          Join Pipeline Hub to manage CI/CD pipelines and deployments.
         </Typography>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
+        {formError && (
+          <Alert severity="error" sx={{ mb: 2, fontSize: "13px" }}>
+            {formError}
           </Alert>
         )}
 
-        <Stack spacing={2}>
+        <Stack spacing={2.5}>
           <TextField
             label="Full name"
             fullWidth
             required
             size="small"
+            autoFocus
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={handleChange("name")}
           />
-          <TextField
-            label="Work email"
-            type="email"
-            fullWidth
-            required
-            size="small"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
+
+          <Box>
+            <TextField
+              label="Email address"
+              type="email"
+              fullWidth
+              required
+              size="small"
+              value={form.email}
+              onChange={handleChange("email")}
+            />
+            <Typography
+              variant="caption"
+              sx={{ color: "#8b949e", display: "block", mt: 0.5, fontSize: "11.5px" }}
+            >
+              Use the email address associated with your GitHub account.
+            </Typography>
+          </Box>
+
           <TextField
             label="Password"
             fullWidth
             required
             size="small"
-            type={show ? "text" : "password"}
+            type={showPw ? "text" : "password"}
             value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            onChange={handleChange("password")}
+            helperText="Minimum 8 characters"
             slotProps={{
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShow((s) => !s)} edge="end" size="small">
-                      {show ? <VisibilityOffIcon sx={{ fontSize: 16 }} /> : <VisibilityIcon sx={{ fontSize: 16 }} />}
+                    <IconButton onClick={() => setShowPw((s) => !s)} edge="end" size="small">
+                      {showPw
+                        ? <VisibilityOffOutlinedIcon sx={{ fontSize: 16 }} />
+                        : <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />}
                     </IconButton>
                   </InputAdornment>
                 ),
               },
             }}
           />
+
           <TextField
-            select
-            label="Role in Organization"
+            label="Confirm password"
             fullWidth
+            required
             size="small"
-            value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value })}
-          >
-            <MenuItem value="Developer">Developer (Author & Run Pipelines)</MenuItem>
-            <MenuItem value="Admin">Admin (Platform Governance)</MenuItem>
-          </TextField>
+            type={showConfirm ? "text" : "password"}
+            value={form.confirmPassword}
+            onChange={handleChange("confirmPassword")}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowConfirm((s) => !s)} edge="end" size="small">
+                      {showConfirm
+                        ? <VisibilityOffOutlinedIcon sx={{ fontSize: 16 }} />
+                        : <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
 
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            disabled={loading}
+            disabled={submitting}
             sx={{
-              py: 1,
+              py: 1.2,
               fontWeight: 600,
               backgroundColor: "#238636",
               "&:hover": { backgroundColor: "#2ea043" },
             }}
           >
-            {loading ? "Creating account…" : "Create account"}
+            {submitting ? "Creating account..." : "Create account"}
           </Button>
-
-          <Divider sx={{ my: 0.5 }} />
 
           <Typography variant="caption" sx={{ color: "#8b949e", textAlign: "center" }}>
             Already have an account?{" "}
-            <Link to="/login" style={{ color: "#58a6ff", fontWeight: 600 }}>
+            <Link to="/" style={{ color: "#58a6ff", fontWeight: 600 }}>
               Sign in
             </Link>
           </Typography>

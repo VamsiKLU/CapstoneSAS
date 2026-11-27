@@ -9,7 +9,7 @@ export default function AdminUsers() {
           User Management
         </Typography>
         <Typography variant="body2" sx={{ color: "#8b949e" }}>
-          Developer accounts and access control. Full implementation in the next phase when the database is connected.
+          Developer accounts and access control.
         </Typography>
       </Box>
       <Box
@@ -22,7 +22,7 @@ export default function AdminUsers() {
         }}
       >
         <Typography variant="body2" sx={{ color: "#6e7681" }}>
-          User management will be implemented in the next phase when the database is connected.
+          User management will be available in a future release.
         </Typography>
       </Box>
     </AdminShell>

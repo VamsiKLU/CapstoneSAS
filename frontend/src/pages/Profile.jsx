@@ -1,32 +1,39 @@
 import { Avatar, Box, Button, Divider, Stack, Typography } from "@mui/material";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
-import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
+import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import AppShell from "../components/AppShell";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import "../styles/profile.css";
 
 export default function Profile() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "PH";
 
+  // Nested GitHub info from new Spring Boot API shape
+  const gh = user?.github || null;
+  const avatarUrl = gh?.avatarUrl || null;
+
   return (
-    <AppShell title="Profile" subtitle="Account / Developer Profile">
+    <AppShell title="Profile">
       <div className="ph-page-head">
         <Box>
           <div className="ph-page-head-title">
             <Typography variant="h5" sx={{ fontWeight: 600, color: "#f0f6fc" }}>
               Developer Profile
             </Typography>
-            <span className="gh-badge purple">CLOUD-240 User</span>
+            <span className="gh-badge neutral">Developer</span>
           </div>
           <Typography variant="body2" sx={{ color: "#8b949e", mt: 0.3 }}>
-            GitHub identity, role authorization, and account scope.
+            Account information, GitHub identity, and role authorization.
           </Typography>
         </Box>
       </div>
@@ -44,7 +51,7 @@ export default function Profile() {
         >
           <Stack direction="row" spacing={2.5} alignItems="flex-start">
             <Avatar
-              src={user?.avatar_url || undefined}
+              src={avatarUrl || undefined}
               alt={user?.name || "Developer"}
               sx={{
                 width: 64,
@@ -56,18 +63,18 @@ export default function Profile() {
                 border: "2px solid #30363d",
               }}
             >
-              {!user?.avatar_url ? initials : null}
+              {!avatarUrl ? initials : null}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, color: "#f0f6fc", mb: 0.3 }}>
                 {user?.name || "Developer User"}
               </Typography>
-              {user?.github_username && (
+              {gh?.username && (
                 <Typography
                   variant="body2"
                   sx={{ color: "#8b949e", fontFamily: "var(--ph-font-mono)", fontSize: "13px", mb: 1 }}
                 >
-                  @{user.github_username}
+                  @{gh.username}
                 </Typography>
               )}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
@@ -89,10 +96,10 @@ export default function Profile() {
                 >
                   {user?.role || "DEVELOPER"}
                 </Box>
-                {user?.github_profile_url && (
+                {gh?.profileUrl && (
                   <Button
                     component="a"
-                    href={user.github_profile_url}
+                    href={gh.profileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     size="small"
@@ -117,7 +124,7 @@ export default function Profile() {
           </Stack>
         </Box>
 
-        {/* Identity details table */}
+        {/* Identity details */}
         <Box
           sx={{
             background: "#161b22",
@@ -138,16 +145,33 @@ export default function Profile() {
                 <Typography variant="caption" sx={{ color: "#8b949e", display: "block", mb: 0.3 }}>
                   GitHub Account
                 </Typography>
-                <Typography variant="body2" sx={{ color: "#f0f6fc", fontFamily: "var(--ph-font-mono)", fontSize: "13px" }}>
-                  {user?.github_username ? `@${user.github_username}` : "Not connected"}
-                </Typography>
+                {gh?.username ? (
+                  <Typography variant="body2" sx={{ color: "#f0f6fc", fontFamily: "var(--ph-font-mono)", fontSize: "13px" }}>
+                    @{gh.username}
+                  </Typography>
+                ) : (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <LinkOffOutlinedIcon sx={{ fontSize: 14, color: "#8b949e" }} />
+                    <Typography variant="body2" sx={{ color: "#8b949e", fontSize: "13px" }}>
+                      Not connected
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => navigate("/connect-github")}
+                      sx={{ fontSize: "11px", color: "#58a6ff", minHeight: 0, py: 0, px: 0.5 }}
+                    >
+                      Connect
+                    </Button>
+                  </Stack>
+                )}
               </Box>
             </Box>
             <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, px: 3, py: 2.5 }}>
               <EmailOutlinedIcon sx={{ fontSize: 17, color: "#8b949e", mt: 0.2, flexShrink: 0 }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="caption" sx={{ color: "#8b949e", display: "block", mb: 0.3 }}>
-                  Primary Email
+                  Email
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#f0f6fc", fontFamily: "var(--ph-font-mono)", fontSize: "13px" }}>
                   {user?.email || "Not available"}
@@ -161,18 +185,18 @@ export default function Profile() {
                   Platform Role
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#f0f6fc", fontSize: "13px" }}>
-                  Developer (Pipeline Author and Execution Privileges)
+                  Developer
                 </Typography>
               </Box>
             </Box>
             <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, px: 3, py: 2.5 }}>
-              <BusinessOutlinedIcon sx={{ fontSize: 17, color: "#8b949e", mt: 0.2, flexShrink: 0 }} />
+              <AccountCircleOutlinedIcon sx={{ fontSize: 17, color: "#8b949e", mt: 0.2, flexShrink: 0 }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="caption" sx={{ color: "#8b949e", display: "block", mb: 0.3 }}>
-                  Authentication Provider
+                  Authentication
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#58a6ff", fontFamily: "var(--ph-font-mono)", fontSize: "12px" }}>
-                  GitHub OAuth
+                  Email and password + GitHub OAuth
                 </Typography>
               </Box>
             </Box>
